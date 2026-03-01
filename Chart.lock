@@ -1,0 +1,33 @@
+dependencies:
+- name: config-server
+  repository: file://charts/config-server
+  version: 0.1.0
+- name: password-manager
+  repository: file://charts/password-manager
+  version: 0.1.0
+- name: otp-service
+  repository: file://charts/otp-service
+  version: 0.1.0
+- name: notes-service
+  repository: file://charts/notes-service
+  version: 0.1.0
+- name: messages-service
+  repository: file://charts/messages-service
+  version: 0.1.0
+- name: auth-service
+  repository: file://charts/auth-service
+  version: 0.1.0
+- name: cockroachdb
+  repository: https://charts.cockroachdb.com
+  version: 19.0.6
+- name: kafka
+  repository: https://charts.bitnami.com/bitnami
+  version: 26.8.5
+- name: cassandra
+  repository: https://charts.bitnami.com/bitnami
+  version: 10.5.3
+- name: redis
+  repository: https://charts.bitnami.com/bitnami
+  version: 18.19.4
+digest: sha256:32831bc5ef4f7affd45618d0f7c4eeef20110c5105a1936e12efad497e4c9ac0
+generated: "2026-03-01T15:08:08.148574+01:00"

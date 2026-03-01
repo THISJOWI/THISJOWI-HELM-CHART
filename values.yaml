@@ -1,0 +1,168 @@
+# ===========================================================
+# THISJOWI - values.yaml
+# ===========================================================
+# Edita los valores marcados con [CONFIGURAR] antes de
+# instalar el chart.
+#
+# Instalación:
+#   helm install thisjowi ./THISJOWI-HELM-CHART -n thisjowi --create-namespace
+#
+# Actualizar tras editar:
+#   helm upgrade thisjowi ./THISJOWI-HELM-CHART -n thisjowi
+# ===========================================================
+
+# -----------------------------------------------------------
+# INGRESS
+# -----------------------------------------------------------
+ingress:
+  enabled: true
+  host: "api.tudominio.com" # [CONFIGURAR] tu dominio
+  entrypoint: web # web = HTTP | websecure = HTTPS
+
+# -----------------------------------------------------------
+# SECRETOS
+# Rellena todos los campos vacíos antes de instalar.
+# -----------------------------------------------------------
+secrets:
+  dbPort: "" # [CONFIGURAR] ej: 26257
+  dbUsername: "" # [CONFIGURAR]
+  dbPassword: "" # [CONFIGURAR]
+
+  redisPort: "" # [CONFIGURAR] ej: 6379
+  redisPassword: "" # [CONFIGURAR]
+
+  kafkaHost: "" # [CONFIGURAR] ej: kafka
+  kafkaPort: "" # [CONFIGURAR] ej: 9092
+
+  jwtSecret: "" # [CONFIGURAR] mínimo 32 caracteres
+
+  mailUsername: "" # [CONFIGURAR]
+  mailPassword: "" # [CONFIGURAR]
+  mailSenderEmail: "" # [CONFIGURAR]
+  mailSenderName: "" # [CONFIGURAR]
+
+  googleClientId: "" # [CONFIGURAR] opcional, para OAuth con Google
+  googleClientSecret: "" # [CONFIGURAR] opcional, para OAuth con Google
+
+  githubClientId: "" # [CONFIGURAR] opcional, para OAuth con GitHub
+  githubClientSecret: "" # [CONFIGURAR] opcional, para OAuth con GitHub
+
+  cassandraUsername: "" # [CONFIGURAR]
+  cassandraPassword: "" # [CONFIGURAR]
+
+  vaultHost: ""               # [CONFIGURAR] host de Vault
+  vaultPort: ""               # [CONFIGURAR] ej: 8200
+  vaultToken: ""              # [CONFIGURAR] token de Vault
+
+  auth: ""                    # [CONFIGURAR]
+
+# -----------------------------------------------------------
+# SERVICIOS
+# Puedes cambiar las versiones (tag) si lo necesitas.
+# El resto de valores funcionan por defecto.
+# -----------------------------------------------------------
+
+config-server:
+  enabled: true
+  replicaCount: 1
+  image:
+    repository: thsjowi/config
+    tag: "1.0.0" # [CONFIGURAR] versión a desplegar
+    pullPolicy: Always
+  containerPort: 8888
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "250m"
+    limits:
+      memory: "1Gi"
+      cpu: "500m"
+
+password-manager:
+  enabled: true
+  replicaCount: 1
+  image:
+    repository: thsjowi/password
+    tag: "1.0.0" # [CONFIGURAR] versión a desplegar
+    pullPolicy: Always
+  containerPort: 8084
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "250m"
+    limits:
+      memory: "512Mi"
+      cpu: "500m"
+
+otp-service:
+  enabled: true
+  replicaCount: 1
+  image:
+    repository: thsjowi/otp
+    tag: "1.0.0" # [CONFIGURAR] versión a desplegar
+    pullPolicy: Always
+  containerPort: 8085
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "250m"
+    limits:
+      memory: "512Mi"
+      cpu: "500m"
+
+notes-service:
+  enabled: true
+  replicaCount: 1
+  image:
+    repository: thsjowi/note
+    tag: "1.0.1" # [CONFIGURAR] versión a desplegar
+    pullPolicy: Always
+  containerPort: 8083
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "250m"
+    limits:
+      memory: "512Mi"
+      cpu: "500m"
+
+messages-service:
+  enabled: true
+  replicaCount: 1
+  image:
+    repository: thsjowi/messages
+    tag: "1.0.9" # [CONFIGURAR] versión a desplegar
+    pullPolicy: Always
+  containerPort: 8086
+  cassandra:
+    host: "cassandra" # [CONFIGURAR] si usas Cassandra externo, pon su host
+    port: "9042"
+    datacenter: "DC1"
+    keyspace: "messaging"
+  kafka:
+    host: "kafka" # [CONFIGURAR] si usas Kafka externo, pon su host
+    port: "9092"
+    groupId: "messages-service"
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "250m"
+    limits:
+      memory: "512Mi"
+      cpu: "500m"
+
+auth-service:
+  enabled: true
+  replicaCount: 1
+  image:
+    repository: thsjowi/auth
+    tag: "1.0.0" # [CONFIGURAR] versión a desplegar
+    pullPolicy: Always
+  containerPort: 8080
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "250m"
+    limits:
+      memory: "512Mi"
+      cpu: "500m"

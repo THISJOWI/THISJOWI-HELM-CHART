@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: messages
+  labels:
+    app: messages
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: messages
+  template:
+    metadata:
+      labels:
+        app: messages
+      annotations:
+        linkerd.io/inject: enabled
+        config.linkerd.io/proxy-await: "enabled"
+    spec:
+      containers:
+        - name: messages
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.containerPort }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          env:
+            - name: SERVER_PORT
+              value: "{{ .Values.containerPort }}"
+            - name: CASSANDRA_HOST
+              value: "{{ .Values.cassandra.host }}"
+            - name: CASSANDRA_PORT
+              value: "{{ .Values.cassandra.port }}"
+            - name: CASSANDRA_DATACENTER
+              value: "{{ .Values.cassandra.datacenter }}"
+            - name: CASSANDRA_KEYSPACE
+              value: "{{ .Values.cassandra.keyspace }}"
+            - name: CASSANDRA_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: cassandra-username
+            - name: CASSANDRA_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: cassandra-password
+            - name: KAFKA_HOST
+              value: "{{ .Values.kafka.host }}"
+            - name: KAFKA_PORT
+              value: "{{ .Values.kafka.port }}"
+            - name: KAFKA_GROUP_ID
+              value: "{{ .Values.kafka.groupId }}"

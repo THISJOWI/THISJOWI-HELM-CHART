@@ -1,0 +1,14 @@
+enabled: true
+replicaCount: 1
+image:
+  repository: thsjowi/auth
+  tag: "1.3.9"
+  pullPolicy: Always
+containerPort: 8082
+resources:
+  requests:
+    memory: "256Mi"
+    cpu: "250m"
+  limits:
+    memory: "512Mi"
+    cpu: "500m"

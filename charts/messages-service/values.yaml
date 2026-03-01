@@ -1,0 +1,23 @@
+enabled: true
+replicaCount: 1
+image:
+  repository: thsjowi/messages
+  tag: "1.0.9"
+  pullPolicy: Always
+containerPort: 8086
+cassandra:
+  host: "cassandra"
+  port: "9042"
+  datacenter: "DC1"
+  keyspace: "messaging"
+kafka:
+  host: "kafka"
+  port: "9092"
+  groupId: "messages-service"
+resources:
+  requests:
+    memory: "256Mi"
+    cpu: "250m"
+  limits:
+    memory: "512Mi"
+    cpu: "500m"
