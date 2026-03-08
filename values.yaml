@@ -50,11 +50,7 @@ secrets:
   cassandraUsername: "" # [CONFIGURAR]
   cassandraPassword: "" # [CONFIGURAR]
 
-  vaultHost: ""               # [CONFIGURAR] host de Vault
-  vaultPort: ""               # [CONFIGURAR] ej: 8200
-  vaultToken: ""              # [CONFIGURAR] token de Vault
-
-  auth: ""                    # [CONFIGURAR]
+  auth: "" # [CONFIGURAR]
 
 # -----------------------------------------------------------
 # SERVICIOS

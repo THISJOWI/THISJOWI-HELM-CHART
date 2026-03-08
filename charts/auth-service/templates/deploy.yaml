@@ -61,21 +61,7 @@ spec:
                 secretKeyRef:
                   name: app-secrets
                   key: kafka-port
-            - name: VAULT_HOST
-              valueFrom:
-                secretKeyRef:
-                  name: app-secrets
-                  key: vault-host
-            - name: VAULT_PORT
-              valueFrom:
-                secretKeyRef:
-                  name: app-secrets
-                  key: vault-port
-            - name: VAULT_TOKEN
-              valueFrom:
-                secretKeyRef:
-                  name: app-secrets
-                  key: vault-token
+
             - name: JWT_SECRET
               valueFrom:
                 secretKeyRef:
