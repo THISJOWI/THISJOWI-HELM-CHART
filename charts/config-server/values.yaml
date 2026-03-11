@@ -2,7 +2,7 @@ enabled: true
 replicaCount: 1
 image:
   repository: thsjowi/config
-  tag: "1.0.0"
+  tag: "latest"
   pullPolicy: Always
 containerPort: 8888
 resources:

@@ -2,7 +2,7 @@ enabled: true
 replicaCount: 1
 image:
   repository: thsjowi/messages
-  tag: "1.0.9"
+  tag: "latest"
   pullPolicy: Always
 containerPort: 8086
 cassandra:
