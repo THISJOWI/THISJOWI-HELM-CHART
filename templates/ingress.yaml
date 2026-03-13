@@ -10,7 +10,17 @@ metadata:
 spec:
   ingressClassName: traefik
   rules:
-    - host: {{ .Values.ingress.host }}
+    - host: |
+        {{- if .Values.ingress.autoDetectNodeIP }}
+        {{- $nodeIP := (lookup "v1" "Node" "" "").items | first | .status.addresses | map(select(.type=="ExternalIP" or .type=="InternalIP")) | first | .address }}
+        {{- if .Values.ingress.useNipIO }}
+        {{ printf "%s.nip.io" $nodeIP }}
+        {{- else }}
+        {{ $nodeIP }}
+        {{- end }}
+        {{- else }}
+        {{ .Values.ingress.host }}
+        {{- end }}
       http:
         paths:
           - path: /v1/passwords

@@ -1,0 +1,83 @@
+{{- if .Values.security.rbac.enabled }}
+---
+# ServiceAccount para los servicios THISJOWI
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: thisjowi
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "thisjowi.labels" . | nindent 4 }}
+
+---
+# Role con permisos mínimos para los servicios
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: thisjowi
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "thisjowi.labels" . | nindent 4 }}
+rules:
+  # Permitir lectura de secrets (para credenciales)
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "list"]
+  # Permitir lectura de configmaps
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["get", "list", "watch"]
+  # Permitir lectura de endpoints (para service discovery)
+  - apiGroups: [""]
+    resources: ["endpoints", "services"]
+    verbs: ["get", "list", "watch"]
+
+---
+# RoleBinding para asignar el Role al ServiceAccount
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: thisjowi
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "thisjowi.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: thisjowi
+subjects:
+  - kind: ServiceAccount
+    name: thisjowi
+    namespace: {{ .Release.Namespace }}
+
+---
+# ClusterRole para permisos en el nivel del cluster (si es necesario)
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: thisjowi-cluster
+  labels:
+    {{- include "thisjowi.labels" . | nindent 4 }}
+rules:
+  # Solo lectura de nodos para auto-detección de IP
+  - apiGroups: [""]
+    resources: ["nodes"]
+    verbs: ["get", "list"]
+
+---
+# ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: thisjowi-cluster
+  labels:
+    {{- include "thisjowi.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: thisjowi-cluster
+subjects:
+  - kind: ServiceAccount
+    name: thisjowi
+    namespace: {{ .Release.Namespace }}
+{{- end }}

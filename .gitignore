@@ -1,0 +1,23 @@
+# Helm artifacts
+charts/*/Chart.lock
+*.tgz
+
+# Kubernetes
+kubeconfig
+kubeconfig.yaml
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Temporary files
+*.tmp
+*.log
+
+# OS
+.DS_Store
+Thumbs.db

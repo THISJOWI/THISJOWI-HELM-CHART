@@ -1,10 +1,25 @@
-# helm/my-app/Chart.yaml
 apiVersion: v2
-name: THISJOWI-HELM-CHART
-description: Umbrella chart - Password Manager, OTP, Notes, Messages
+name: THISJOWI
+description: Complete microservices platform - Password Manager, OTP, Notes, Messages, Authentication. Plug & play installation with auto-generated secure secrets.
 type: application
 version: 1.0.0
 appVersion: "1.0.0"
+keywords:
+  - thisjowi
+  - microservices
+  - password-manager
+  - otp
+  - notes
+  - messages
+  - auth
+home: https://github.com/THISJOWI/THISJOWI-HELM-CHART
+icon: https://raw.githubusercontent.com/THISJOWI/THISJOWI-HELM-CHART/main/helm/icon.png
+sources:
+  - https://github.com/THISJOWI/THISJOWI-HELM-CHART
+maintainers:
+  - name: THISJOWI Team
+    email: support@thisjowi.com
+    url: https://github.com/THISJOWI
 
 dependencies:
   # Tus microservicios (locales)
@@ -37,24 +52,3 @@ dependencies:
     version: "0.1.0"
     repository: "file://charts/auth-service"
     condition: auth-service.enabled
-
-  # Infraestructura (charts externos)
-  - name: cockroachdb
-    version: "19.0.6"
-    repository: "https://charts.cockroachdb.com"
-    condition: cockroachdb.enabled
-
-  - name: kafka
-    version: "26.8.5"
-    repository: "https://charts.bitnami.com/bitnami"
-    condition: kafka.enabled
-
-  - name: cassandra
-    version: "10.5.3"
-    repository: "https://charts.bitnami.com/bitnami"
-    condition: cassandra.enabled
-
-  - name: redis # KeyDB es compatible con el chart de Redis
-    version: "18.19.4"
-    repository: "https://charts.bitnami.com/bitnami"
-    condition: redis.enabled

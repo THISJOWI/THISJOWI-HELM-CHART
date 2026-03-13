@@ -1,189 +1,348 @@
 # THISJOWI Helm Chart
 
-Umbrella chart para desplegar la plataforma **THISJOWI** en Kubernetes. Incluye los microservicios de la aplicación y toda la infraestructura necesaria.
+> 🚀 **Plug & Play installation** - Secure, automatic, zero-configuration deployment
 
-## Servicios incluidos
+[![Kubernetes](https://img.shields.io/badge/Kubernetes-1.20+-blue)](https://kubernetes.io)
+[![Helm](https://img.shields.io/badge/Helm-3.0+-green)](https://helm.sh)
+[![License](https://img.shields.io/badge/License-MIT-yellow)](LICENSE)
 
-### Microservicios
-| Servicio | Puerto | Imagen |
-|---|---|---|
-| `auth-service` | 8080 | `thsjowi/auth` |
-| `config-server` | 8888 | `thsjowi/config` |
-| `password-manager` | 8084 | `thsjowi/password` |
-| `otp-service` | 8085 | `thsjowi/otp` |
-| `notes-service` | 8083 | `thsjowi/note` |
-| `messages-service` | 8086 | `thsjowi/messages` |
+THISJOWI is a complete microservices platform with automatic secret generation, security policies, and zero-configuration deployment.
 
-### Infraestructura
-| Componente | Chart | Versión |
-|---|---|---|
-| CockroachDB | `cockroachdb/cockroachdb` | 19.0.6 |
-| Kafka | `bitnami/kafka` | 26.8.5 |
-| Cassandra | `bitnami/cassandra` | 10.5.3 |
-| Redis | `bitnami/redis` | 18.19.4 |
+## 📦 What's Included
 
-## Requisitos previos
+- **auth-service** - Authentication & Authorization (Port 8080)
+- **password-manager** - Secure password management (Port 8084)
+- **otp-service** - One-Time Password service (Port 8085)
+- **notes-service** - Notes management (Port 8083)
+- **messages-service** - Messaging with Cassandra & Kafka (Port 8086)
+- **config-server** - Central configuration service (Port 8888)
 
-- Kubernetes 1.21+
-- Helm 3.x
-- [Traefik](https://doc.traefik.io/traefik/getting-started/install-traefik/) como Ingress Controller
-- [Linkerd](https://linkerd.io/2/getting-started/) (service mesh, opcional pero recomendado)
+## ⚡ Quick Install
 
-## Configuración
-
-Antes de instalar, edita `values.yaml` y rellena todos los campos marcados con `[CONFIGURAR]`.
-
-### 1. Ingress
-
-```yaml
-ingress:
-  enabled: true
-  host: "api.tudominio.com"   # Tu dominio real
-  entrypoint: web             # web = HTTP | websecure = HTTPS
-```
-
-### 2. Secretos
-
-Todos los campos vacíos deben rellenarse antes de la instalación:
-
-```yaml
-secrets:
-  # Base de datos (CockroachDB)
-  dbPort: "26257"
-  dbUsername: "tu_usuario"
-  dbPassword: "tu_contraseña"
-
-  # Redis
-  redisPort: "6379"
-  redisPassword: "tu_contraseña_redis"
-
-  # Kafka
-  kafkaHost: "kafka"
-  kafkaPort: "9092"
-
-  # JWT (mínimo 32 caracteres)
-  jwtSecret: "una_clave_secreta_muy_larga_y_segura"
-
-  # Correo electrónico
-  mailUsername: "usuario@ejemplo.com"
-  mailPassword: "tu_contraseña_email"
-  mailSenderEmail: "noreply@tudominio.com"
-  mailSenderName: "THISJOWI"
-
-  # OAuth Google (opcional)
-  googleClientId: ""
-  googleClientSecret: ""
-
-  # OAuth GitHub (opcional)
-  githubClientId: ""
-  githubClientSecret: ""
-
-  # Cassandra
-  cassandraUsername: "cassandra"
-  cassandraPassword: "tu_contraseña_cassandra"
-
-  auth: "tu_token_de_autenticacion"
-```
-
-### 3. Versiones de imágenes
-
-Puedes ajustar la versión (`tag`) de cada microservicio:
-
-```yaml
-auth-service:
-  image:
-    tag: "1.0.0"
-
-config-server:
-  image:
-    tag: "1.0.0"
-
-password-manager:
-  image:
-    tag: "1.0.0"
-
-otp-service:
-  image:
-    tag: "1.0.0"
-
-notes-service:
-  image:
-    tag: "1.0.1"
-
-messages-service:
-  image:
-    tag: "1.0.9"
-```
-
-### 4. Configuración avanzada de messages-service
-
-Si usas Cassandra o Kafka externos, configura sus hosts en el bloque de `messages-service`:
-
-```yaml
-messages-service:
-  cassandra:
-    host: "cassandra"      # Host de Cassandra
-    port: "9042"
-    datacenter: "DC1"
-    keyspace: "messaging"
-  kafka:
-    host: "kafka"          # Host de Kafka
-    port: "9092"
-    groupId: "messages-service"
-```
-
-### 5. Habilitar/deshabilitar componentes
-
-Cualquier servicio puede deshabilitarse individualmente:
-
-```yaml
-cockroachdb:
-  enabled: false   # No despliega CockroachDB (p.ej. si usas una DB externa)
-```
-
-## Instalación
+### 30-Second Installation
 
 ```bash
-# 1. Descargar dependencias
-helm dependency update
-
-# 2. Instalar el chart
-helm install thisjowi . -n thisjowi --create-namespace
+# From GitHub (Recommended)
+helm install thisjowi https://github.com/THISJOWI/THISJOWI-HELM-CHART.git \
+  -n thisjowi \
+  --create-namespace
 ```
 
-## Actualización
+That's it! All secrets are auto-generated. The application is ready.
 
-Después de modificar `values.yaml`:
+**Note**: This installs only THISJOWI microservices. Database, Redis, Kafka, and Cassandra are configured as external services by default. If you want to deploy them in the cluster, see [Infrastructure Components](INFRASTRUCTURE.md).
+
+### With Custom Domain
 
 ```bash
-helm upgrade thisjowi . -n thisjowi
+helm install thisjowi https://github.com/THISJOWI/THISJOWI-HELM-CHART.git \
+  -n thisjowi \
+  --create-namespace \
+  --set ingress.host=api.example.com
 ```
 
-## Rutas expuestas
-
-Una vez desplegado, la API estará disponible en el host configurado:
-
-| Ruta | Servicio |
-|---|---|
-| `GET /v1/auth` | auth-service |
-| `GET /v1/passwords` | password-manager |
-| `GET /v1/notes` | notes-service |
-| `GET /v1/otp` | otp-service |
-| `GET /v1/messages` | messages-service |
-
-## Operaciones útiles
+### Production Setup
 
 ```bash
-# Ver estado de los pods
+helm install thisjowi https://github.com/THISJOWI/THISJOWI-HELM-CHART.git \
+  -n thisjowi \
+  --create-namespace \
+  --set ingress.host=api.example.com \
+  --set environment=production \
+  --set auth-service.replicaCount=3 \
+  --set messages-service.replicaCount=3
+```
+
+## ✨ Features
+
+- ✅ **Zero Configuration** - Everything auto-configured
+- ✅ **Secure by Default** - Auto-generated 32+ character secrets
+- ✅ **Auto IP Detection** - Detects cluster IP automatically
+- ✅ **Health Checks** - Readiness and liveness probes on all services
+- ✅ **RBAC Enabled** - Role-based access control
+- ✅ **Network Policies** - Optional network isolation
+- ✅ **Resource Limits** - CPU and memory constraints set
+- ✅ **Non-root** - Runs as non-root user by default
+- ✅ **Multi-environment** - development, staging, production
+
+## 📋 Requirements
+
+- Kubernetes 1.20+
+- Helm 3.0+
+- kubectl configured
+
+```bash
+# Verify requirements
+kubectl cluster-info
+helm version
+```
+
+## 🔐 Security
+
+### Auto-Generated Secrets
+These are automatically created with 32+ random characters:
+- Database password
+- Redis password
+- JWT secret (critical)
+- Cassandra password
+- Auth token
+
+### Security Features
+- RBAC enabled by default
+- Pod security context (non-root user 1000)
+- Network policies available
+- Service accounts with minimal permissions
+- Secrets stored in Kubernetes Secrets
+
+## 📊 Installation Options
+
+### Option 1: From GitHub (Recommended)
+
+```bash
+# Basic
+helm install thisjowi https://github.com/THISJOWI/THISJOWI-HELM-CHART.git \
+  -n thisjowi --create-namespace
+
+# With parameters
+helm install thisjowi https://github.com/THISJOWI/THISJOWI-HELM-CHART.git \
+  -n thisjowi --create-namespace \
+  --set ingress.host=api.example.com \
+  --set environment=production
+```
+
+### Option 2: From Local Clone
+
+```bash
+git clone https://github.com/THISJOWI/THISJOWI-HELM-CHART.git
+cd THISJOWI-HELM-CHART
+
+helm install thisjowi ./helm -n thisjowi --create-namespace
+```
+
+### Option 3: Using Installation Script
+
+```bash
+git clone https://github.com/THISJOWI/THISJOWI-HELM-CHART.git
+cd THISJOWI-HELM-CHART/helm
+
+chmod +x install.sh
+./install.sh --domain api.example.com --environment production
+```
+
+## 🔧 Common Commands
+
+### View Installation Status
+
+```bash
+# Check pods
 kubectl get pods -n thisjowi
 
-# Ver logs de un servicio específico
-kubectl logs -n thisjowi deployment/auth
-kubectl logs -n thisjowi deployment/password
-kubectl logs -n thisjowi deployment/notes
-kubectl logs -n thisjowi deployment/otp
-kubectl logs -n thisjowi deployment/messages
+# Check services
+kubectl get svc -n thisjowi
 
-# Desinstalar
-helm uninstall thisjowi -n thisjowi
+# Check ingress
+kubectl get ingress -n thisjowi
+
+# View detailed status
+kubectl describe pods -n thisjowi
 ```
+
+### View Logs
+
+```bash
+# View auth service logs
+kubectl logs -n thisjowi -f deployment/auth
+
+# View specific pod logs
+kubectl logs -n thisjowi [pod-name]
+```
+
+### Port Forwarding (Development)
+
+```bash
+# Forward auth service
+kubectl port-forward -n thisjowi svc/auth 8080:80
+
+# Forward all services
+kubectl port-forward -n thisjowi svc/auth 8080:80 &
+kubectl port-forward -n thisjowi svc/password 8084:80 &
+kubectl port-forward -n thisjowi svc/otp 8085:80 &
+```
+
+### Get Access Information
+
+```bash
+# Get application URL
+kubectl get ingress -n thisjowi -o jsonpath='{.items[0].spec.rules[0].host}'
+
+# Get secrets
+kubectl get secret -n thisjowi
+
+# View secret values (use carefully!)
+kubectl get secret thisjowi-secrets -n thisjowi -o yaml
+```
+
+## 📈 Upgrade
+
+```bash
+# Upgrade to latest
+helm upgrade thisjowi https://github.com/THISJOWI/THISJOWI-HELM-CHART.git -n thisjowi
+
+# Upgrade with new values
+helm upgrade thisjowi https://github.com/THISJOWI/THISJOWI-HELM-CHART.git \
+  -n thisjowi \
+  --set environment=production
+```
+
+## 🗑️ Uninstall
+
+```bash
+# Remove the release
+helm uninstall thisjowi -n thisjowi
+
+# Remove the namespace
+kubectl delete namespace thisjowi
+```
+
+## ⚙️ Configuration
+
+### Common Parameters
+
+```bash
+# Set custom domain
+--set ingress.host=api.example.com
+
+# Set environment (development|staging|production)
+--set environment=production
+
+# Set custom database password
+--set secrets.dbPassword="your-secure-password"
+
+# Set custom JWT secret
+--set secrets.jwtSecret="your-jwt-token"
+
+# Increase replicas for high availability
+--set auth-service.replicaCount=3
+--set messages-service.replicaCount=3
+
+# Enable TLS/HTTPS
+--set ingress.tls.enabled=true
+
+# Enable network policies
+--set security.networkPolicy.enabled=true
+
+# Use specific image versions
+--set auth-service.image.tag="v1.2.3"
+```
+
+### Full Parameter List
+
+See [values.yaml](values.yaml) for complete configuration options.
+
+## 🐛 Troubleshooting
+
+### Pods not starting
+
+```bash
+# Check pod status
+kubectl describe pod [pod-name] -n thisjowi
+
+# View logs
+kubectl logs [pod-name] -n thisjowi
+
+# Check events
+kubectl get events -n thisjowi --sort-by='.lastTimestamp'
+```
+
+### Ingress not responding
+
+```bash
+# Check ingress status
+kubectl get ingress -n thisjowi -o yaml
+
+# Verify Traefik is installed
+kubectl get deployment -n kube-system | grep traefik
+```
+
+### Services not communicating
+
+```bash
+# Test connectivity
+kubectl run -it --rm test --image=curlimages/curl --restart=Never -n thisjowi -- \
+  curl http://auth:80/health
+
+# Check network policies
+kubectl get networkpolicies -n thisjowi
+```
+
+### Secrets not found
+
+```bash
+# Verify secrets exist
+kubectl get secrets -n thisjowi
+
+# Check secret contents
+kubectl describe secret thisjowi-secrets -n thisjowi
+```
+
+## 📚 Documentation
+
+- [Installation Guide](INSTALL.md) - Detailed installation instructions
+- [Infrastructure Components](INFRASTRUCTURE.md) - How to deploy databases, caches, and message brokers
+- [Troubleshooting Guide](TROUBLESHOOTING.md) - Common issues and solutions
+- [values.yaml](values.yaml) - All configuration parameters
+- [Contributing](../CONTRIBUTING.md) - How to contribute
+- [Security Policy](../SECURITY.md) - Security guidelines
+
+## 🎯 Use Cases
+
+### Development
+
+```bash
+helm install thisjowi https://github.com/THISJOWI/THISJOWI-HELM-CHART.git \
+  -n thisjowi --create-namespace
+```
+
+### Staging
+
+```bash
+helm install thisjowi https://github.com/THISJOWI/THISJOWI-HELM-CHART.git \
+  -n thisjowi --create-namespace \
+  --set ingress.host=staging-api.example.com \
+  --set environment=staging
+```
+
+### Production
+
+```bash
+helm install thisjowi https://github.com/THISJOWI/THISJOWI-HELM-CHART.git \
+  -n thisjowi --create-namespace \
+  --set ingress.host=api.example.com \
+  --set environment=production \
+  --set auth-service.replicaCount=3 \
+  --set messages-service.replicaCount=3 \
+  --set secrets.dbPassword="$(openssl rand -base64 32)" \
+  --set secrets.jwtSecret="$(openssl rand -base64 48)" \
+  --set security.rbac.enabled=true \
+  --set security.networkPolicy.enabled=true
+```
+
+## 📞 Support
+
+- 📖 [Documentation](INSTALL.md)
+- 🐛 [Report Issues](https://github.com/THISJOWI/THISJOWI-HELM-CHART/issues)
+- 💬 [Discussions](https://github.com/THISJOWI/THISJOWI-HELM-CHART/discussions)
+
+## 📄 License
+
+This project is licensed under the MIT License - see [LICENSE](../LICENSE) file for details.
+
+## 🙏 Contributing
+
+Contributions are welcome! Please see [CONTRIBUTING.md](../CONTRIBUTING.md) for guidelines.
+
+---
+
+**Made with ❤️ by the THISJOWI Team**
+
+[GitHub](https://github.com/THISJOWI) | [Twitter](https://twitter.com/THISJOWI) | [Website](https://thisjowi.com)

@@ -1,66 +1,117 @@
 # ===========================================================
-# THISJOWI - values.yaml
+# THISJOWI - values.yaml (PLUG & PLAY SEGURO)
 # ===========================================================
-# Edita los valores marcados con [CONFIGURAR] antes de
-# instalar el chart.
+# ¡Sin configuración requerida! Todos los secretos se
+# generan automáticamente de forma segura.
 #
-# Instalación:
-#   helm install thisjowi ./THISJOWI-HELM-CHART -n thisjowi --create-namespace
+# Instalación rápida:
+#   helm install thisjowi ./helm -n thisjowi --create-namespace
 #
-# Actualizar tras editar:
-#   helm upgrade thisjowi ./THISJOWI-HELM-CHART -n thisjowi
+# Personalizar (opcional):
+#   helm install thisjowi ./helm -n thisjowi --create-namespace \
+#     --set ingress.host="mi-dominio.com" \
+#     --set secrets.dbPassword="mi-contraseña-segura"
+#
+# Actualizar:
+#   helm upgrade thisjowi ./helm -n thisjowi
 # ===========================================================
+
+# -----------------------------------------------------------
+# SEGURIDAD & AUTENTICACIÓN
+# -----------------------------------------------------------
+security:
+  enabled: true
+  rbac:
+    enabled: true
+  networkPolicy:
+    enabled: false # Activa si necesitas aislamiento de red
+  podSecurityContext:
+    enabled: true
+    runAsNonRoot: true
+    runAsUser: 1000
+    fsGroup: 1000
 
 # -----------------------------------------------------------
 # INGRESS
 # -----------------------------------------------------------
 ingress:
   enabled: true
-  host: "" # [CONFIGURAR] tu dominio
-  entrypoint: web # web = HTTP | websecure = HTTPS
+  host: "" # Auto-detecta IP si está vacío, o pon tu dominio
+  autoDetectNodeIP: true # Obtiene IP del nodo automáticamente
+  useNipIO: true # Convierte IP a dominio (192.168.1.100.nip.io)
+  entrypoint: web # web = HTTP | websecure = HTTPS (configura Traefik)
+  className: traefik
+  tls:
+    enabled: false # Activa para HTTPS con certificados
 
 # -----------------------------------------------------------
-# SECRETOS
-# Rellena todos los campos vacíos antes de instalar.
+# SECRETOS (Generación automática)
+# Dejar vacío = generado automáticamente de forma segura
+# Llenar = usar tu valor personalizado
 # -----------------------------------------------------------
 secrets:
-  dbPort: "26257" # [CONFIGURAR] ej: 26257
-  dbUsername: "root" # [CONFIGURAR]
-  dbPassword: "" # [CONFIGURAR]
+  # Base de datos CockroachDB
+  dbPort: "26257"
+  dbUsername: "root"
+  dbPassword: "" # Auto-genera si está vacío
+  dbName: "thisjowi"
+  dbSSLMode: "disable" # disable | require para producción
 
-  redisPort: "6379" # [CONFIGURAR] ej: 6379
-  redisPassword: "" # [CONFIGURAR]
+  # Redis Cache
+  redisPort: "6379"
+  redisPassword: "" # Auto-genera si está vacío
+  redisDB: "0"
 
-  kafkaHost: "kafka" # [CONFIGURAR] ej: kafka
-  kafkaPort: "9092" # [CONFIGURAR] ej: 9092
+  # Kafka Messaging
+  kafkaHost: "kafka"
+  kafkaPort: "9092"
+  kafkaSecurityProtocol: "PLAINTEXT" # PLAINTEXT | SASL_SSL
 
-  jwtSecret: "PEludmFsaWQgQmFzZTY0Pg==" # [CONFIGURAR] mínimo 32 caracteres
+  # JWT Authentication (crítico para seguridad)
+  jwtSecret: "" # Auto-genera 32+ caracteres aleatorios
+  jwtExpiration: "86400" # 24 horas en segundos
 
-  cassandraUsername: "cassandra" # [CONFIGURAR]
-  cassandraPassword: "cassandra" # [CONFIGURAR]
+  # Cassandra (para mensajes)
+  cassandraHost: "cassandra"
+  cassandraPort: "9042"
+  cassandraUsername: "cassandra"
+  cassandraPassword: "" # Auto-genera si está vacío
+  cassandraKeyspace: "messaging"
 
-  auth: "" # [CONFIGURAR]
+  # Auth general
+  authToken: "" # Auto-genera si está vacío
 
 # -----------------------------------------------------------
 # SERVICIOS
-# Puedes cambiar las versiones (tag) si lo necesitas.
-# El resto de valores funcionan por defecto.
+# Todos habilitados por defecto
+# Cambiar 'tag' solo si necesitas versión específica
 # -----------------------------------------------------------
+
+environment: "development" # development | staging | production
 
 config-server:
   enabled: true
   replicaCount: 1
   image:
     repository: thsjowi/config
-    tag: "latest" # [CONFIGURAR] versión a desplegar
-    pullPolicy: Always
+    tag: "latest"
+    pullPolicy: IfNotPresent
   containerPort: 8888
+  health:
+    readinessProbe:
+      enabled: true
+      initialDelaySeconds: 10
+      periodSeconds: 10
+    livenessProbe:
+      enabled: true
+      initialDelaySeconds: 30
+      periodSeconds: 10
   resources:
     requests:
-      memory: "512Mi"
-      cpu: "250m"
+      memory: "256Mi"
+      cpu: "100m"
     limits:
-      memory: "1Gi"
+      memory: "512Mi"
       cpu: "500m"
 
 password-manager:
@@ -68,13 +119,22 @@ password-manager:
   replicaCount: 1
   image:
     repository: thsjowi/password
-    tag: "latest" # [CONFIGURAR] versión a desplegar
-    pullPolicy: Always
+    tag: "latest"
+    pullPolicy: IfNotPresent
   containerPort: 8084
+  health:
+    readinessProbe:
+      enabled: true
+      initialDelaySeconds: 10
+      periodSeconds: 10
+    livenessProbe:
+      enabled: true
+      initialDelaySeconds: 30
+      periodSeconds: 10
   resources:
     requests:
       memory: "256Mi"
-      cpu: "250m"
+      cpu: "100m"
     limits:
       memory: "512Mi"
       cpu: "500m"
@@ -84,13 +144,22 @@ otp-service:
   replicaCount: 1
   image:
     repository: thsjowi/otp
-    tag: "latest" # [CONFIGURAR] versión a desplegar
-    pullPolicy: Always
+    tag: "latest"
+    pullPolicy: IfNotPresent
   containerPort: 8085
+  health:
+    readinessProbe:
+      enabled: true
+      initialDelaySeconds: 10
+      periodSeconds: 10
+    livenessProbe:
+      enabled: true
+      initialDelaySeconds: 30
+      periodSeconds: 10
   resources:
     requests:
       memory: "256Mi"
-      cpu: "250m"
+      cpu: "100m"
     limits:
       memory: "512Mi"
       cpu: "500m"
@@ -100,13 +169,22 @@ notes-service:
   replicaCount: 1
   image:
     repository: thsjowi/note
-    tag: "latest" # [CONFIGURAR] versión a desplegar
-    pullPolicy: Always
+    tag: "latest"
+    pullPolicy: IfNotPresent
   containerPort: 8083
+  health:
+    readinessProbe:
+      enabled: true
+      initialDelaySeconds: 10
+      periodSeconds: 10
+    livenessProbe:
+      enabled: true
+      initialDelaySeconds: 30
+      periodSeconds: 10
   resources:
     requests:
       memory: "256Mi"
-      cpu: "250m"
+      cpu: "100m"
     limits:
       memory: "512Mi"
       cpu: "500m"
@@ -116,22 +194,31 @@ messages-service:
   replicaCount: 1
   image:
     repository: thsjowi/messages
-    tag: "latest" # [CONFIGURAR] versión a desplegar
-    pullPolicy: Always
+    tag: "latest"
+    pullPolicy: IfNotPresent
   containerPort: 8086
   cassandra:
-    host: "cassandra" # [CONFIGURAR] si usas Cassandra externo, pon su host
+    host: "cassandra"
     port: "9042"
     datacenter: "DC1"
     keyspace: "messaging"
   kafka:
-    host: "kafka" # [CONFIGURAR] si usas Kafka externo, pon su host
+    host: "kafka"
     port: "9092"
     groupId: "messages-service"
+  health:
+    readinessProbe:
+      enabled: true
+      initialDelaySeconds: 10
+      periodSeconds: 10
+    livenessProbe:
+      enabled: true
+      initialDelaySeconds: 30
+      periodSeconds: 10
   resources:
     requests:
       memory: "256Mi"
-      cpu: "250m"
+      cpu: "100m"
     limits:
       memory: "512Mi"
       cpu: "500m"
@@ -141,13 +228,50 @@ auth-service:
   replicaCount: 1
   image:
     repository: thsjowi/auth
-    tag: "latest" # [CONFIGURAR] versión a desplegar
-    pullPolicy: Always
+    tag: "latest"
+    pullPolicy: IfNotPresent
   containerPort: 8080
+  health:
+    readinessProbe:
+      enabled: true
+      initialDelaySeconds: 10
+      periodSeconds: 10
+    livenessProbe:
+      enabled: true
+      initialDelaySeconds: 30
+      periodSeconds: 10
   resources:
     requests:
       memory: "256Mi"
-      cpu: "250m"
+      cpu: "100m"
     limits:
       memory: "512Mi"
       cpu: "500m"
+
+# -----------------------------------------------------------
+# INFRAESTRUCTURA (Dependencias externas)
+# -----------------------------------------------------------
+infrastructure:
+  # CockroachDB (Base de datos principal)
+  cockroachdb:
+    enabled: false # Activa si quieres instalar CockroachDB en el clúster
+    replicaCount: 1
+    persistentVolume:
+      enabled: true
+      size: "10Gi"
+      storageClass: "default"
+
+  # Redis (Caché)
+  redis:
+    enabled: false # Activa si quieres instalar Redis en el clúster
+    replicaCount: 1
+
+  # Kafka (Message broker)
+  kafka:
+    enabled: false # Activa si quieres instalar Kafka en el clúster
+    replicaCount: 1
+
+  # Cassandra (Almacén de mensajes)
+  cassandra:
+    enabled: false # Activa si quieres instalar Cassandra en el clúster
+    replicaCount: 1
